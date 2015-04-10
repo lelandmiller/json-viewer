@@ -1,14 +1,16 @@
 'use strict';
 
 
+var readlineSync = require('readline-sync')
+var fs = require('fs');
 
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var cycle = require('cycle');
 var _ = require('lodash');
 
-var debugData = [];
+var dataSet = [];
+
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
@@ -19,8 +21,7 @@ app.get('/jsontree.js', function(req, res) {
     res.sendFile(__dirname + '/public/jsontree.js');
 });
 app.get('/data.json', function(req, res) {
-    var newobj = cycle.decycle(debugData);
-    res.json(newobj);
+    res.json(dataSet);
 });
 /*
 io.on('connection', function() {
@@ -32,72 +33,59 @@ http.listen(3000, function() {
     console.log('debugger listening on *:3000');
 });
 
-function sendDebugData(data) {
-    debugData = data;
+
+function update() {
     //TODO does need?
     io.emit('update');
 }
 
 
-// Contains a list of javascript objects { 'plugin': , 'pages':, 'metalsmith': }
-// with data post application of the plugin.
-
-function makeDebugObject(name, pages, metalsmith) {
-    var newPages = _.forEach(_.clone(pages, true), function (val) {
-        val.contents = val.contents.toString();
-    });
-    return {
-        plugin: name,
-        pages: newPages,
-        metalsmith: _.clone(metalsmith, true)
-    };
-}
-
-function applyDebug(metalsmith) {
-    var originalUse = metalsmith.use;
-    var originalBuild = metalsmith.build;
-    var debuggingData = [];
-
-    var firstPluginOfBuild = true;
-    var pluginCount = 1;
-
-    // TODO implement name argument
-    metalsmith.use = function(plugin, name) {
-        var injectedPlugin,
-            pluginName = name || 'Plugin #' + pluginCount;
 
 
-        if (plugin.length < 3) {
-            injectedPlugin = function(pages, metalsmith) {
-                plugin(pages, metalsmith);
-                debuggingData.push(makeDebugObject(pluginName, pages, metalsmith));
-            };
-        } else if (plugin.length === 3) {
-            injectedPlugin = function(pages, metalsmith, done) {
-                plugin(pages, metalsmith, function() {
-                    debuggingData.push(makeDebugObject(pluginName, pages, metalsmith));
-                    done();
-                });
-            };
-        } else {
-            throw new Error('Invalid plugin argument length');
+function loadFile(path) {
+    console.log('loadFile(', path, ')')
+    fs.readFile(path, 'utf8', function(err, data) {
+        if (err) {
+            console.log(err);
+            return;
         }
 
-        originalUse.call(metalsmith, injectedPlugin);
-        firstPluginOfBuild = false;
-        pluginCount++;
-        return metalsmith;
-    };
-
-    metalsmith.build = function(callback) {
-        originalBuild.call(metalsmith, callback);
-        firstPluginOfBuild = true;
-        sendDebugData(debuggingData);
-        debuggingData = [];
-        return metalsmith;
-    };
-
-    return metalsmith;
+        var s = data.split('\n');
+        var out = [];
+        _.forEach(s, function(n, key) {
+            if (n.toString().trim().length > 0) {
+                try {
+                    var o = JSON.parse(n.toString());
+                    //console.log(o);
+                } catch (e) {
+                    console.log(e);
+                    console.log(n);
+                }
+                out.push(o);
+            }
+        });
+        dataSet = out;
+        //console.log(dataSet);
+        update();
+    });
 }
 
-module.exports = applyDebug;
+//loadFile('/home/lelandmiller/p.json')
+if (process.argv.length > 2) {
+    loadFile(process.argv[2])
+}
+var readline = require('readline'),
+    rl = readline.createInterface(process.stdin, process.stdout);
+rl.setPrompt('> ');
+rl.prompt();
+rl.on('line', function(line) {
+    var s = line.split(' ');
+    switch (s[0]) {
+        case 'load':
+            loadFile(s[1]);
+            break;
+    }
+    rl.prompt();
+}).on('close', function() {
+    process.exit(0);
+});

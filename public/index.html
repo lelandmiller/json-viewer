@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Metalsmith Debug</title>
+    <title>JSON Viewer</title>
     <link href="jsontree.css" rel="stylesheet">
     <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
@@ -34,12 +34,23 @@
 </head>
 
 <body>
-    <div id="left">
-      <ol></ol>
+    <div id="viewer">
+        <table class="pure-table">
+            <thead>
+                <tr>
+                    <th>Preheader</th>
+                    <th>Payload Length</th>
+                    <th>Header</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
     </div>
-    <div id="right"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
     <script>
         var socket = io();
         /*
@@ -49,21 +60,42 @@
             return false;
         });
         */
-        function update() {
-            $.get('/data.json', function(data) {
-                var left = $('#left ol').empty();
-                _.forEach(data, function(val) {
-                    var link = $('<li>').text(val.plugin);
-                    link.click(function () {
-                $('#right').html(JSONTree.create(val))
+        function update()
+        {
+            $.get('/data.json', function(data)
+            {
+                /*
+                  var left = $('#left ol').empty();
+                  _.forEach(data, function(val) {
+                      var link = $('<li>').text(val.plugin);
+                      link.click(function () {
+                  $('#right').html(JSONTree.create(val))
 
-                      });
-                    left.append(link);
+                        });
+                      left.append(link);
 
+                  });
+                  */
+                var tbody = $('#viewer table tbody').empty();
+                var odd = true;
+                _.forEach(data, function(v) {
+                  console.log(v)
+                    var e = '<tr ';
+                    if (odd) e += 'class="pure-table-odd" ';
+                    e += '><td>' + JSON.stringify(v.Preheader); 
+                    e += '</td><td>' + v.PayloadSize;
+                    e += '</td><td>' + JSON.stringify(v.Header); 
+                    e +=    '</td></tr>';
+                    tbody.append(e);
+
+                    odd = !odd;
                 });
+                //$('#viewer').text(data) 
+                console.dir(data);
             });
         }
-        socket.on('update', function() {
+        socket.on('update', function()
+        {
             console.log('updated');
             update();
         });
