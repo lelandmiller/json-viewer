@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Metalsmith Debug</title>
+    <link href="jsontree.css" rel="stylesheet">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+    <script src="jsontree.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        #left,
+        #right {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            overflow: scroll;
+        }
+        #left {
+            left: 0;
+            right: 50%;
+            background: #DDD;
+        }
+        #right {
+            right: 0;
+            left: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="left">
+      <ol></ol>
+    </div>
+    <div id="right"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        var socket = io();
+        /*
+        $('form').submit(function() {
+            socket.emit('chat message', $('#m').val());
+            $('#m').val('');
+            return false;
+        });
+        */
+        function update() {
+            $.get('/data.json', function(data) {
+                var left = $('#left ol').empty();
+                _.forEach(data, function(val) {
+                    var link = $('<li>').text(val.plugin);
+                    link.click(function () {
+                $('#right').html(JSONTree.create(val))
+
+                      });
+                    left.append(link);
+
+                });
+            });
+        }
+        socket.on('update', function() {
+            console.log('updated');
+            update();
+        });
+
+        update();
+    </script>
+</body>

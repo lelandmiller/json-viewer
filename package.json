@@ -1,0 +1,41 @@
+{
+  "name": "metalsmith-visualdebug",
+  "version": "0.0.0",
+  "description": "A visual debugging tool for Metalsmith.",
+  "author": {
+    "name": "Leland Miller",
+    "email": "lelandmiller@gmail.com",
+    "url": "www.lelandmiller.com"
+  },
+  "repository": "lelandmiller/metalsmith-visualdebug",
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "metalsmith-visualdebug",
+    "Metalsmith",
+    "debugging",
+    "visualization"
+  ],
+  "dependencies": {
+    "cycle": "^1.0.3",
+    "express": "^4.10.6",
+    "lodash": "^2.4.1",
+    "socket.io": "^1.2.1"
+  },
+  "devDependencies": {
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-nodeunit": "^0.4.1",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-mocha-cli": "^1.11.0",
+    "jshint-stylish": "^1.0.0",
+    "load-grunt-tasks": "^1.0.0",
+    "metalsmith": "^1.0.1",
+    "time-grunt": "^1.0.0"
+  },
+  "scripts": {
+    "test": "grunt"
+  }
+}
